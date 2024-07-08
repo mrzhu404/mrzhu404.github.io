@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hitung Winrate MLBB</title>
+    <meta name="keywords" content="hitung winrate MLBB, hitung WR Mobile Legends, Mobile Legends winrate calculator, MLBB WR calculator">
+    <meta name="description" content="Gunakan alat ini untuk menghitung jumlah kemenangan tambahan yang diperlukan untuk mencapai target winrate di Mobile Legends: Bang Bang.">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kode+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        body {
+            background: #212529;
+            font-family: "Kode Mono", monospace;
+            color: #f8f9fa;
+        }
+        .container {
+            max-width: 600px;
+            background: #343a40;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        }
+        .form-control {
+            border-radius: 5px;
+            background: #495057;
+            color: #f8f9fa;
+            border: 1px solid #ced4da;
+        }
+        .form-control:focus {
+            background: #495057;
+            color: #f8f9fa;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 5px;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        /* Dark theme for SweetAlert2 */
+        .swal2-popup {
+            background: #343a40;
+            color: #f8f9fa;
+        }
+        .swal2-title {
+            color: #f8f9fa;
+        }
+        .swal2-content {
+            color: #f8f9fa;
+        }
+        .swal2-styled.swal2-confirm {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .swal2-styled.swal2-confirm:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .footer i {
+            margin-right: 10px;
+        }
+        .footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Winrate MLBB</h1>
+        <form id="wrForm">
+            <div class="form-group mb-3">
+                <label for="currentMatches">Jumlah Match Saat Ini:</label>
+                <input type="number" class="form-control" id="currentMatches" name="currentMatches" placeholder="120" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="currentWR">WR Saat Ini (%):</label>
+                <input type="number" class="form-control" id="currentWR" name="currentWR" step="0.1" placeholder="75" required>
+            </div>
+            <div class="form-group mb-3">
+                <label for="targetWR">Target WR (%):</label>
+                <input type="number" class="form-control" id="targetWR" name="targetWR" step="0.1" placeholder="90" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Hitung</button>
+        </form>
+        <div class="footer">
+            <p>Copyright ©2017 DexSkieee.</p>
+            <p>
+                <i class="fab fa-whatsapp"></i>083856124021  |  
+                <i class="fab fa-instagram"></i>@ohhmyzhuuu
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('wrForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            let currentMatches = parseInt(document.getElementById('currentMatches').value);
+            let currentWR = parseFloat(document.getElementById('currentWR').value) / 100;
+            let targetWR = parseFloat(document.getElementById('targetWR').value) / 100;
+
+            if (targetWR >= 1 || targetWR > 1) {
+                let timerInterval;
+                Swal.fire({
+                    title: 'INFORMASI',
+                    html: 'Itu Mustahil !!!<br><br>Ditutup dalam <b></b> detik.',
+                    timer: 9000,
+                    timerProgressBar: true,
+                    didOpen: () => {
+                        Swal.showLoading();
+                        const timer = Swal.getHtmlContainer().querySelector('b');
+                        timerInterval = setInterval(() => {
+                            timer.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+                        }, 100);
+                    },
+                    willClose: () => {
+                        clearInterval(timerInterval);
+                    }
+                });
+                return;
+            }
+
+            let currentWins = currentWR * currentMatches;
+            let newMatches = currentMatches;
+            let newWins = currentWins;
+            let additionalMatches = 0;
+
+            while (newWins / newMatches < targetWR) {
+                additionalMatches++;
+                newMatches++;
+                newWins++;
+            }
+
+            let timerInterval;
+            Swal.fire({
+                title: 'INFORMASI',
+                html: `Anda perlu memenangkan ${additionalMatches} match lagi untuk mencapai win rate tersebut<br><br>Ditutup dalam <b></b> detik.`,
+                timer: 9000,
+                timerProgressBar: true,
+                didOpen: () => {
+                    Swal.showLoading();
+                    const timer = Swal.getHtmlContainer().querySelector('b');
+                    timerInterval = setInterval(() => {
+                        timer.textContent = Math.ceil(Swal.getTimerLeft() / 1000);
+                    }, 100);
+                },
+                willClose: () => {
+                    clearInterval(timerInterval);
+                }
+            }).then((result) => {
+                if (result.dismiss === Swal.DismissReason.timer) {
+                    console.log('Popup ditutup oleh timer');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
