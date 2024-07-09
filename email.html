@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Sementara</title>
+    <meta name="keywords" content="email sementara, email sekali pakai, mail swipe">
+    <meta name="description" content="Buat alamat email sementara menggunakan Mail Swipe dan lihat pesan di kotak masuk.">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kode+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <style>
+        body {
+            background: #212529;
+            font-family: 'Kode Mono', monospace;
+            color: #f8f9fa;
+            text-align: center;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 600px;
+            background: #343a40;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            margin: 0 auto;
+        }
+        .form-control {
+            border-radius: 5px;
+            background: #495057;
+            color: #f8f9fa;
+            border: 1px solid #ced4da;
+            width: 100%;
+            padding: 0.75rem 1rem;
+        }
+        .form-control:focus {
+            background: #495057;
+            color: #f8f9fa;
+        }
+        .btn-primary {
+            background-color: #007bff;
+            border-color: #007bff;
+            border-radius: 5px;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            border-color: #0056b3;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #f8f9fa;
+        }
+        .footer i {
+            margin-right: 10px;
+        }
+        .footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+        }
+        #inbox .email-item {
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            background-color: #495057;
+            border-radius: 5px;
+        }
+        #inbox .email-item p {
+            margin: 0.5rem 0;
+            color: #f8f9fa;
+            text-align: left; /* Rata kiri */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3 class="mb-4"><i class="fa fa-envelope"></i> Email Sementara</h3>
+        <form id="wrForm">
+            <button type="button" class="btn btn-primary" id="startButton" onclick="mulaiLayananEmail()">Buat Email</button>
+
+            <div id="mailContent" style="display: none;">
+                <p id="tempEmail"></p>
+                <br>
+                <button type="button" class="btn btn-primary mb-3" onclick="refreshInbox()">Perbarui Kotak Masuk</button>
+                <div id="inbox"></div>
+            </div>
+        </form>
+
+        <div class="footer mt-5">
+            <p>Hak Cipta ©2024 DexSkieee.</p>
+            <p>
+                <i class="fab fa-whatsapp"></i>083856124021  |  
+                <i class="fab fa-instagram"></i>@xyzushinnn
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API = 'https://www.1secmail.com/api/v1/';
+        const DOMAINS = ['1secmail.com', '1secmail.org', '1secmail.net'];
+
+        let emailData;
+
+        function generateUserName() {
+            const name = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let username = '';
+            for (let i = 0; i < 10; i++) {
+                username += name.charAt(Math.floor(Math.random() * name.length));
+            }
+            return username;
+        }
+
+        function getRandomDomain() {
+            return DOMAINS[Math.floor(Math.random() * DOMAINS.length)];
+        }
+
+        async function cekEmail(mail, login, domain) {
+            const reqLink = `${API}?action=getMessages&login=${login}&domain=${domain}`;
+            const req = await fetch(reqLink).then(response => response.json());
+            const length = req.length;
+
+            const inbox = document.getElementById('inbox');
+            inbox.innerHTML = '';
+
+            if (length === 0) {
+                Swal.fire({
+                    html: 'Kotak masuk Anda kosong.',
+                    timer: 10000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    background: '#343a40',
+                    customClass: {
+                        popup: 'text-light',
+                        content: 'text-light text-left' // Warna font putih dan rata kiri
+                    }
+                });
+            } else {
+                const latestMailData = req[length - 1];
+                const msgRead = `${API}?action=readMessage&login=${login}&domain=${domain}&id=${latestMailData.id}`;
+                const reqMessage = await fetch(msgRead).then(response => response.json());
+
+                Swal.fire({
+                    html: `
+                        <p><strong>Dari :</strong> ${reqMessage.from}</p>
+                        <p><strong>===================</strong></strong></strong></br>${reqMessage.textBody}</p>
+                    `,
+                    timer: 10000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    background: '#343a40',
+                    customClass: {
+                        popup: 'text-light',
+                        content: 'text-light text-center' // Warna font putih dan rata kiri
+                    }
+                });
+            }
+        }
+
+        function mulaiLayananEmail() {
+            const login = generateUserName();
+            const domain = getRandomDomain();
+            const mail = `${login}@${domain}`;
+
+            emailData = { mail, login, domain };
+
+            document.getElementById('tempEmail').innerText = `Alamat email sementara Anda adalah ${mail}`;
+            document.getElementById('mailContent').style.display = 'block';
+            document.getElementById('startButton').style.display = 'none';
+
+            refreshInbox();
+        }
+
+        function refreshInbox() {
+            if (emailData) {
+                const { mail, login, domain } = emailData;
+                cekEmail(mail, login, domain);
+            }
+        }
+    </script>
+</body>
+</html>
