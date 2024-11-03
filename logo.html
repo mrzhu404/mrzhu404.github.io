@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DexSkieee Ofc</title>
+  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:ital,wght@0,400;0,700;1,400;1,700&family=Pixelify+Sans:wght@400..700&display=swap" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Playwrite DE Grund', sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    h1 {
+      font-family: 'Pixelify Sans', sans-serif;
+    }
+    label, button, input, .alert {
+      font-family: 'PT Sans', sans-serif;
+    }
+    .form-control {
+      background-color: #333;
+      border: 1px solid #555;
+      color: #fff;
+    }
+    .form-control:focus {
+      background-color: #555;
+      border-color: #777;
+      color: #fff;
+    }
+  </style>
+</head>
+<body onclick="playAudio();">
+  <audio id="sec">
+    <source src="https://g.top4top.io/m_319620fge0.mp3" type="audio/mpeg">
+  </audio>
+
+  <div class="container mt-5">
+    <h1 class="text-center">TEXTPRO</h1>
+    <form id="textproForm">
+      <div class="form-group">
+        <label for="textproUrl">Textpro URL</label>
+        <input type="text" class="form-control" id="textproUrl" placeholder="Enter textpro.me URL" required>
+      </div>
+      <div class="form-group">
+        <label for="queryText">Text Query</label>
+        <input type="text" class="form-control" id="queryText" placeholder="Enter text for Textpro" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Start Process</button>
+    </form>
+
+    <div id="alertContainer" class="mt-3"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/cheerio/lib/cheerio.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/form-data"></script>
+  <script src="https://cdn.jsdelivr.net/npm/qs"></script>
+  <script>
+    const fakeUa = () => "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.121 Safari/537.36";
+
+    class Textprome {
+      constructor() {}
+
+      text(url, text) {
+        return new Promise(async (resolve, reject) => {
+          if (!url) return reject("Invalid URL!");
+
+          try {
+            const resultOne = await axios.get(url, {
+              headers: { "User-Agent": fakeUa() }
+            });
+
+            const $ = cheerio.load(resultOne.data);
+            let getOneCookies = resultOne.headers["set-cookie"];
+            let dataFromResult = [];
+
+            $("form.ajax-submit").find("input").each((_, input) => {
+              dataFromResult.push({ name: $(input).attr("name"), value: $(input).attr("value") });
+            });
+
+            const FormDataAppend = new FormData();
+            let dataResultFilter = dataFromResult.filter(item => item.name !== "text[]");
+
+            if (typeof text === "string") text = [text];
+            for (let teks of text) FormDataAppend.append("text[]", teks);
+
+            dataResultFilter.forEach(item => {
+              FormDataAppend.append(item.name, item.value);
+            });
+
+            const resultTwo = await axios.post(url, FormDataAppend, {
+              headers: {
+                ...FormDataAppend.getHeaders(),
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "User-Agent": fakeUa(),
+                "Cookie": getOneCookies
+              }
+            });
+
+            const getData = /<div.*?id="form_value".+>(.*?)<\/div>/.exec(resultTwo.data);
+            const dataJson = JSON.parse(getData[1]);
+            const dataStringify = qs.stringify(dataJson);
+
+            const resultThree = await axios.post("https://textpro.me/effect/create-image", dataStringify, {
+              headers: {
+                "Accept": "*/*",
+                "Accept-Language": "en-US,en;q=0.9",
+                "User-Agent": fakeUa(),
+                "Cookie": getOneCookies
+              }
+            });
+
+            resolve("https://textpro.me" + resultThree.data.fullsize_image);
+
+          } catch (error) {
+            reject(error.message || 'Request error');
+          }
+        });
+      }
+    }
+
+    document.getElementById('textproForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      const textproUrl = document.getElementById('textproUrl').value;
+      const queryText = document.getElementById('queryText').value;
+      
+      if (textproUrl && queryText) {
+        const textprome = new Textprome();
+        try {
+          const result = await textprome.text(textproUrl, queryText);
+          showAlert(`Image URL: <a href="${result}" target="_blank">${result}</a>`, 'success');
+        } catch (error) {
+          showAlert(`Error: ${error}`, 'danger');
+        }
+      }
+    });
+
+    function showAlert(message, type) {
+      const alertContainer = document.getElementById('alertContainer');
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type}`;
+      alertDiv.role = 'alert';
+      alertDiv.innerHTML = message;
+      alertContainer.innerHTML = ''; // Clear previous alerts
+      alertContainer.appendChild(alertDiv);
+    }
+
+    function playAudio() {
+      const audioElement = document.getElementById("sec");
+      audioElement.play();
+    }
+  </script>
+</body>
+</html>
