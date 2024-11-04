@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DexsNime TV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'PT Sans', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        h2 {
+            font-family: 'Cabin Sketch', cursive;
+            color: #dc3545;
+            font-size: 2.5rem;
+        }
+        h3, h4 {
+            font-size: 1rem;
+            color: #dc3545;
+            text-align: center;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+            border-radius: 0;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        #backButton {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            color: #dc3545; /* Font color red */
+            background-color: transparent; /* Transparent background */
+            border: none; /* No border */
+        }
+        #backButton:hover {
+            background-color: transparent; /* Keep transparent on hover */
+            color: #b71c1c; /* Darker red on hover */
+        }
+        .table thead {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .table tbody tr {
+            color: #fff;
+        }
+        .table-responsive {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        a.anime-title, a.episode-link {
+            color: #dc3545;
+            text-decoration: none;
+        }
+        a.anime-title:hover, a.episode-link:hover {
+            color: #c82333;
+        }
+        #animeDetails img {
+            border: 3px solid #dc3545;
+            border-radius: 8px;
+        }
+        .d-flex button {
+            color: #fff;
+            background-color: #333;
+            border: none;
+        }
+        .d-flex button:hover {
+            background-color: #c82333;
+        }
+        .episode-title, .anime-title {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .small-title {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <button id="backButton" class="btn" style="display: none;"><i class="fas fa-arrow-left"></i></button>
+        <h2 class="text-center mb-4">DexsNime TV</h2>
+        <form id="searchForm" class="mb-4">
+            <div class="form-group">
+                <label for="query">Masukkan Judul :</label>
+                <input type="text" id="query" name="query" class="form-control" placeholder="Contoh: Maou Gakuin no Futekigousha" required>
+            </div>
+            <button type="submit" class="btn btn-danger btn-block">Cari Anime</button>
+        </form>
+        <div id="results"></div>
+        <div id="animeDetails" class="mt-4"></div>
+        <div id="episodeDetails" class="mt-4"></div>
+    </div>
+
+    <script>
+        let previousData = null;
+
+        document.getElementById('searchForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            document.getElementById('results').innerHTML = "";
+            document.getElementById('animeDetails').innerHTML = "";
+            document.getElementById('episodeDetails').innerHTML = "";
+            document.getElementById('backButton').style.display = "none";
+
+            fetch(`https://kumanime.vercel.app/api/search/${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        previousData = data.data;
+                        displayResults(data.data);
+                    } else {
+                        document.getElementById('results').innerHTML = "<p class='text-center text-danger'>Anime tidak ditemukan.</p>";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('results').innerHTML = "<p class='text-center text-danger'>Terjadi kesalahan. Silakan coba lagi.</p>";
+                    console.error("Error:", error);
+                });
+        });
+
+        function displayResults(animeList) {
+            let output = `
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped">
+                        <thead class="thead-dark">
+                            <tr>
+                                <th>Judul</th>
+                                <th>Rilis</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            animeList.forEach(anime => {
+                output += `
+                    <tr>
+                        <td><a href="#" class="anime-title" data-slug="${anime.slug}">${anime.title}</a></td>
+                        <td>${anime.release}</td>
+                    </tr>
+                `;
+            });
+
+            output += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            document.getElementById('results').innerHTML = output;
+
+            document.querySelectorAll('.anime-title').forEach(title => {
+                title.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const slug = this.getAttribute('data-slug');
+                    fetchAnimeDetails(slug);
+                });
+            });
+        }
+
+        function fetchAnimeDetails(slug) {
+            fetch(`https://kumanime.vercel.app/api/anime/${slug}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        document.getElementById('results').innerHTML = "";
+                        document.getElementById('episodeDetails').innerHTML = "";
+                        document.getElementById('searchForm').style.display = "none";
+                        displayAnimeDetails(data.animeData);
+                        document.getElementById('backButton').style.display = "block";
+                    } else {
+                        document.getElementById('animeDetails').innerHTML = "<p class='text-center text-danger'>Detail anime tidak ditemukan.</p>";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('animeDetails').innerHTML = "<p class='text-center text-danger'>Terjadi kesalahan. Silakan coba lagi.</p>";
+                    console.error("Error:", error);
+                });
+        }
+
+        function displayAnimeDetails(animeData) {
+            const detailsOutput = `
+                <h4 class="anime-title">${animeData.title}</h4>
+                <p>${animeData.synopsis}</p>
+                <h4>Genre:</h4>
+                <p>${animeData.genres.join(', ')}</p>
+                <h4>Episodes:</h4>
+                <ul>
+                    ${animeData.episodes.map(episode => `
+                        <li>
+                            <a href="#" class="episode-link" data-eps-slug="${episode.eps_slug}">${episode.eps_title}</a>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            document.getElementById('animeDetails').innerHTML = detailsOutput;
+
+            document.querySelectorAll('.episode-link').forEach(episodeLink => {
+                episodeLink.addEventListener('click', function(event) {
+                    event.preventDefault();
+                    const epsSlug = this.getAttribute('data-eps-slug');
+                    fetchEpisodeDetails(epsSlug);
+                });
+            });
+        }
+
+        function fetchEpisodeDetails(epsSlug) {
+            fetch(`https://kumanime.vercel.app/api/episode/${epsSlug}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        document.getElementById('animeDetails').innerHTML = "";
+                        displayEpisodeDetails(data.eps_detail);
+                    } else {
+                        document.getElementById('episodeDetails').innerHTML = "<p class='text-center text-danger'>Detail anime tidak ditemukan.</p>";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('episodeDetails').innerHTML = "<p class='text-center text-danger'>Terjadi kesalahan. Silakan coba lagi.</p>";
+                    console.error("Error:", error);
+                });
+        }
+
+        function displayEpisodeDetails(epsDetail) {
+            const episodeOutput = `
+                <iframe src="${epsDetail.stream_url}" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+                <h4 class="small-title">${epsDetail.title}</h4>
+                <p>${epsDetail.synopsis}</p>
+                <div class="d-flex justify-content-between mt-3">
+                    ${epsDetail.prev_eps_slug ? `<button onclick="fetchEpisodeDetails('${epsDetail.prev_eps_slug}')" class="btn btn-danger">Episode Sebelumnya</button>` : ""}
+                    ${epsDetail.next_eps_slug ? `<button onclick="fetchEpisodeDetails('${epsDetail.next_eps_slug}')" class="btn btn-danger">Episode Berikutnya</button>` : ""}
+                </div>
+            `;
+            document.getElementById('episodeDetails').innerHTML = episodeOutput;
+        }
+
+        document.getElementById('backButton').addEventListener('click', function() {
+            if (previousData) {
+                document.getElementById('animeDetails').innerHTML = "";
+                document.getElementById('episodeDetails').innerHTML = "";
+                displayResults(previousData);
+                document.getElementById('searchForm').style.display = "block";
+                this.style.display = "none";
+            }
+        });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
