@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Episode</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+        body {
+            font-family: 'PT Sans', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        h2 {
+            font-family: 'Cabin Sketch', cursive;
+            color: #dc3545;
+            font-size: 2.5rem;
+        }
+</style>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">DexsNime TV</h2>
+        <div id="episodeDetails" class="mt-4"></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const epsSlug = params.get('eps_slug');
+
+        if (epsSlug) {
+            fetch(`https://kumanime.vercel.app/api/episode/${epsSlug}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        displayEpisodeDetails(data.eps_detail);
+                    } else {
+                        document.getElementById('episodeDetails').innerHTML = "<p class='text-center text-danger'>Detail episode tidak ditemukan.</p>";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('episodeDetails').innerHTML = "<p class='text-center text-danger'>Terjadi kesalahan. Silakan coba lagi.</p>";
+                    console.error("Error:", error);
+                });
+        }
+
+        function displayEpisodeDetails(epsDetail) {
+            const episodeOutput = `
+                <iframe src="${epsDetail.stream_url}" width="100%" height="400" frameborder="0" allowfullscreen></iframe>
+                <h4 class="small-title">${epsDetail.title}</h4>
+                <p>${epsDetail.synopsis}</p>
+            `;
+            document.getElementById('episodeDetails').innerHTML = episodeOutput;
+        }
+
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.history.back();
+        });
+    </script>
+</body>
+</html>

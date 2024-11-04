@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Anime</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet"> 
+</head>
+<style>
+        body {
+            font-family: 'PT Sans', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        h2 {
+            font-family: 'Cabin Sketch', cursive;
+            color: #dc3545;
+            font-size: 2.5rem;
+        }
+</style>
+<body>
+    <div class="container mt-5">
+    <h2 class="text-center mb-4">DexsNime TV</h2>
+        <div id="animeDetails" class="mt-4"></div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const slug = params.get('slug');
+
+        if (slug) {
+            fetch(`https://kumanime.vercel.app/api/anime/${slug}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        displayAnimeDetails(data.animeData);
+                    } else {
+                        document.getElementById('animeDetails').innerHTML = "<p class='text-center text-danger'>Detail anime tidak ditemukan.</p>";
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('animeDetails').innerHTML = "<p class='text-center text-danger'>Terjadi kesalahan. Silakan coba lagi.</p>";
+                    console.error("Error:", error);
+                });
+        }
+
+        function displayAnimeDetails(animeData) {
+            const detailsOutput = `
+                <h4 class="anime-title">${animeData.title}</h4>
+                <p>${animeData.synopsis}</p>
+                <h4>Genre:</h4>
+                <p>${animeData.genres.join(', ')}</p>
+                <h4>Episodes:</h4>
+                <ul>
+                    ${animeData.episodes.map(episode => `
+                        <li>
+                            <a href="episode_details.html?eps_slug=${episode.eps_slug}" class="episode-link">${episode.eps_title}</a>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            document.getElementById('animeDetails').innerHTML = detailsOutput;
+        }
+
+        document.getElementById('backButton').addEventListener('click', function() {
+            window.history.back();
+        });
+    </script>
+</body>
+</html>

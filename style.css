@@ -1,0 +1,77 @@
+body {
+    font-family: 'PT Sans', sans-serif;
+    background-color: #000;
+    color: #fff;
+}
+h2 {
+    font-family: 'Cabin Sketch', cursive;
+    color: #dc3545;
+    font-size: 2.5rem;
+}
+h3, h4 {
+    font-size: 1rem;
+    color: #dc3545;
+    text-align: center;
+}
+.btn-danger {
+    background-color: #dc3545;
+    border: none;
+    border-radius: 0;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+#backButton {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    color: #dc3545; /* Font color red */
+    background-color: transparent; /* Transparent background */
+    border: none; /* No border */
+}
+#backButton:hover {
+    background-color: transparent; /* Keep transparent on hover */
+    color: #b71c1c; /* Darker red on hover */
+}
+.table thead {
+    background-color: #dc3545;
+    color: #fff;
+}
+.table tbody tr {
+    color: #fff;
+}
+.table-responsive {
+    background-color: #333;
+    padding: 15px;
+    border-radius: 8px;
+}
+a.anime-title, a.episode-link {
+    color: #dc3545;
+    text-decoration: none;
+}
+a.anime-title:hover, a.episode-link:hover {
+    color: #c82333;
+}
+#animeDetails img {
+    border: 3px solid #dc3545;
+    border-radius: 8px;
+}
+.d-flex button {
+    color: #fff;
+    background-color: #333;
+    border: none;
+}
+.d-flex button:hover {
+    background-color: #c82333;
+}
+.episode-title, .anime-title {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 20px;
+}
+.small-title {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-top: 10px;
+}
