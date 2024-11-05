@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DexsNime TV</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        body {
+            font-family: 'PT Sans', sans-serif;
+            background-color: #000;
+            color: #fff;
+        }
+        h2 {
+            font-family: 'Cabin Sketch', cursive;
+            color: #dc3545;
+            font-size: 2.5rem;
+        }
+        h3 {
+            font-size: 1.2rem; /* Ukuran font sedikit lebih besar */
+            color: #dc3545;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h4 {
+            font-size: 1rem;
+            color: #dc3545;
+            text-align: center;
+        }
+        .btn-transparent {
+            background-color: transparent; /* Latar belakang transparan */
+            color: #dc3545; /* Warna font merah */
+            border: 1px solid #dc3545; /* Garis batas merah */
+            border-radius: 0;
+        }
+        .btn-transparent:hover {
+            background-color: rgba(220, 53, 69, 0.1); /* Efek hover */
+            color: #c82333; /* Warna font saat hover */
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .anime-item {
+            background: #333;
+            border: 1px solid #444;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+        .table thead {
+            background-color: #dc3545;
+            color: #fff;
+        }
+        .table tbody tr {
+            color: #fff;
+        }
+        .table-responsive {
+            background-color: #222;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        a.anime-title, a.episode-link {
+            color: #dc3545;
+            text-decoration: none;
+        }
+        a.anime-title:hover, a.episode-link:hover {
+            color: #c82333;
+        }
+        .episode-title, .anime-title {
+            font-size: 1rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .small-title {
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">DexsNime TV</h2>
+        <form id="searchForm" class="mb-4">
+            <div class="form-group">
+                <label for="query">Masukkan Judul :</label>
+                <input type="text" id="query" name="query" class="form-control" placeholder="Contoh: Maou Gakuin no Futekigousha" required>
+            </div>
+            <button type="submit" class="btn btn-danger btn-block">Cari Anime</button>
+        </form>
+        <div id="results" class="mt-4"></div>
+        <div id="animeDetails" class="mt-4"></div>
+        <div id="episodeDetails" class="mt-4"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        async function searchAnime(query) {
+            const response = await fetch(`http://localhost:3000/search?q=${query}`);
+            if (!response.ok) throw new Error("Gagal Fetching");
+
+            return await response.json();
+        }
+
+        async function fetchEpisodeLinks(url) {
+            const response = await fetch(`http://localhost:3000/episode-links?url=${url}`);
+            return await response.json();
+        }
+
+        async function fetchKrakenfilesLink(url) {
+            const response = await fetch(`http://localhost:3000/krakenfiles-link?url=${url}`);
+            const data = await response.json();
+            return data.krakenLink;
+        }
+
+        document.getElementById("searchForm").addEventListener("submit", async (event) => {
+            event.preventDefault(); // Mencegah pengiriman form
+            const query = document.getElementById("query").value;
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = ''; // Bersihkan hasil sebelumnya
+
+            try {
+                const searchResults = await searchAnime(query);
+                for (const result of searchResults) {
+                    const episodeLinks = await fetchEpisodeLinks(result.link);
+                    const animeItemDiv = document.createElement("div");
+                    animeItemDiv.className = "anime-item";
+
+                    // Menambahkan deskripsi tanpa gambar thumbnail
+                    animeItemDiv.innerHTML = `
+                        <h3 class="anime-title">${result.title}</h3>
+                        <p class="small-title">${result.description}</p>
+                    `;
+
+                    for (const episodeLink of episodeLinks) {
+                        const krakenLink = await fetchKrakenfilesLink(episodeLink);
+                        const videoId = krakenLink ? krakenLink.split('/view/')[1].split('/')[0] : ''; // Mengambil video ID dari link
+                        const episodeName = episodeLink.replace("https://samehadaku.email/", "").replace(/\/$/, ""); // Mengambil nama episode dan menghapus "/"
+                        animeItemDiv.innerHTML += `
+                            <p class="episode-title">${episodeName}</p>
+                            <p class="episode-title">
+                                ${videoId 
+                                    ? `<button class="btn btn-transparent" onclick="window.location.href='https://krakenfiles.com/embed-video/${videoId}'"><i class="fa fa-play" aria-hidden="true"></i> Tonton Anime</button>`
+                                    : '-'}
+                            </p>
+                        `;
+                    }
+                    resultsDiv.appendChild(animeItemDiv);
+                }
+            } catch (error) {
+                console.error(error);
+                resultsDiv.innerHTML = `<p class="text-danger">${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
