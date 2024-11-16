@@ -25,14 +25,14 @@
         /* Styling untuk textarea */
         textarea {
             width: 100%;
-            height: 200px;
+            height: 400px; /* Membuat textarea lebih panjang */
             margin-bottom: 20px;
             font-family: 'PT Sans', sans-serif;
             font-size: 14px;
             background-color: #121212;
             color: #fff;
             padding: 10px;
-            resize: vertical;
+            resize: none; /* Menonaktifkan resize */
             box-sizing: border-box;
             border-radius: 4px;
         }
@@ -105,12 +105,13 @@
 </head>
 <body>
     <h1>Review HTML Langsung</h1>
-    <p>Masukkan kode HTML Anda di bawah ini dan lihat hasilnya langsung:</p>
+    <p>Masukkan kode HTML Anda di bawah ini dan lihat hasilnya setelah mengklik tombol "Preview":</p>
     
     <div class="buttons">
         <button id="selectAllBtn">Select All</button>
         <button id="clearBtn">Clear</button>
         <button id="pasteBtn">Paste</button>
+        <button id="previewBtn">Preview</button> <!-- Tombol Preview -->
     </div>
 
     <textarea id="htmlInput" placeholder="Masukkan kode HTML Anda di sini..."></textarea>
@@ -129,10 +130,6 @@
             iframeDoc.open();
             iframeDoc.write(htmlContent);
             iframeDoc.close();
-            
-            // Menampilkan iframe dan tombol X
-            iframe.style.display = 'block';
-            document.getElementById('closeBtn').style.display = 'block';
         });
 
         // Tombol Select All
@@ -164,13 +161,26 @@
                 iframeDoc.open();
                 iframeDoc.write(text);
                 iframeDoc.close();
-
-                // Menampilkan iframe dan tombol X
-                iframe.style.display = 'block';
-                document.getElementById('closeBtn').style.display = 'block';
             } catch (err) {
                 alert('Gagal mem-paste konten dari clipboard.');
             }
+        });
+
+        // Tombol Preview untuk menampilkan hasil
+        document.getElementById("previewBtn").addEventListener("click", function() {
+            const htmlContent = document.getElementById("htmlInput").value;
+            const iframe = document.getElementById("previewFrame");
+            const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+            iframeDoc.open();
+            iframeDoc.write(htmlContent);
+            iframeDoc.close();
+
+            // Menampilkan iframe dan tombol X
+            iframe.style.display = 'block';
+            document.getElementById('closeBtn').style.display = 'block';
+            document.getElementById('htmlInput').style.display = 'none'; // Menyembunyikan textarea
+            document.querySelector('h3').style.display = 'none'; // Menyembunyikan judul Preview
+            document.querySelector('.buttons').style.display = 'none'; // Menyembunyikan tombol
         });
 
         // Tombol Close untuk menyembunyikan preview
@@ -178,6 +188,9 @@
             const iframe = document.getElementById("previewFrame");
             iframe.style.display = 'none'; // Menyembunyikan iframe
             document.getElementById('closeBtn').style.display = 'none'; // Menyembunyikan tombol X
+            document.getElementById('htmlInput').style.display = 'block'; // Menampilkan kembali textarea
+            document.querySelector('h3').style.display = 'block'; // Menampilkan kembali judul Preview
+            document.querySelector('.buttons').style.display = 'flex'; // Menampilkan kembali tombol
         });
     </script>
 </body>
