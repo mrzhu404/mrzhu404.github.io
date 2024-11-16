@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000000;
+            margin: 0;
+            font-family: 'PT Sans', sans-serif;
+        }
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #000000;
+        }
+        .chat-header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #222222;
+            color: white;
+            border-bottom: 1px solid #333333;
+            position: relative;
+        }
+        .header-text {
+            flex: 1;
+            text-align: center;
+            font-family: 'PT Sans', sans-serif;
+            font-size: 1em;
+        }
+        .icon-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .icon-button.settings {
+            left: 10px;
+        }
+        .icon-button.clear {
+            right: 10px;
+        }
+        .chat-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-color: #000000;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+        .message {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: flex-start;
+        }
+        .message .text {
+            padding: 10px;
+            background-color: #222222;
+            color: #ffffff;
+            border: 1px solid #C0C0C0;
+            border-radius: 12px 0 12px 12px;
+            font-family: 'PT Sans', sans-serif;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+            flex: 1;
+        }
+        .image-message {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border: 1px solid #C0C0C0;
+            border-radius: 0 12px 12px 12px;
+            margin-bottom: 10px;
+            background-color: #222222;
+            padding: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        .image-message img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        .chat-footer {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #000000;
+            position: sticky;
+            bottom: 0;
+        }
+        .chat-footer input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 20px;
+            margin: 0 10px;
+            background-color: #333333;
+            color: white;
+            font-size: 1em;
+            font-family: 'PT Sans', sans-serif;
+            outline: none;
+        }
+        .chat-footer button {
+            background-color: transparent;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .chat-footer button:focus {
+            outline: none;
+        }
+        .material-symbols-outlined {
+            font-size: 1.6em;
+            color: #C0C0C0;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .loading-overlay img {
+            width: 100px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #222222;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        .modal-content select {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            background-color: #333333;
+            color: white;
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+        .modal-content button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <button class="icon-button settings" id="settingsButton" title="Pengaturan">
+                <i class="fas fa-cog"></i>
+            </button>
+            <div class="header-text">Image Generator</div>
+            <button class="icon-button clear" id="clearContent" title="Hapus semua konten">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+        <div class="chat-body" id="chat-messages"></div>
+        <div class="chat-footer">
+            <input type="text" id="messageInput" placeholder="Masukkan prompt...">
+            <button id="sendButton"><span class="material-symbols-outlined">send</span></button>
+        </div>
+    </div>
+
+    <div id="loadingSpinner" class="loading-overlay">
+        <img src="https://media.tenor.com/KsIHk9tptf8AAAAj/thinking-hmm.gif" alt="Loading...">
+    </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <h4>Jumlah Generate Gambar</h4>
+            <select id="imageCount">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <button id="saveSettings">Oke</button>
+        </div>
+    </div>
+
+    <script>
+        let imageCount = 1;
+
+        document.getElementById('settingsButton').addEventListener('click', () => {
+            document.getElementById('settingsModal').style.display = 'flex';
+        });
+
+        document.getElementById('saveSettings').addEventListener('click', () => {
+            const count = document.getElementById('imageCount').value;
+            imageCount = parseInt(count);
+            document.getElementById('settingsModal').style.display = 'none';
+        });
+
+        document.getElementById('settingsModal').addEventListener('click', (e) => {
+            if (e.target.id === 'settingsModal') {
+                e.target.style.display = 'none';
+            }
+        });
+
+        function sanitizeInput(input) {
+            const element = document.createElement('div');
+            element.textContent = input;
+            return element.textContent;
+        }
+
+        function containsXSS(input) {
+            const xssPatterns = [
+                /<script.*?>.*?<\/script>/gi,  // Script tags
+                /<.*?>/gi,                    // Other HTML tags
+                /eval\((.*?)\)/gi,             // Eval function
+                /expression\(/gi              // CSS expressions
+            ];
+            return xssPatterns.some(pattern => pattern.test(input));
+        }
+
+        document.getElementById('sendButton').addEventListener('click', async () => {
+            const messageInput = document.getElementById('messageInput');
+            const chatMessages = document.getElementById('chat-messages');
+            let prompt = messageInput.value.trim();
+
+            if (!prompt) {
+                alert('Prompt tidak boleh kosong!');
+                return;
+            }
+
+            if (containsXSS(prompt)) {
+                alert('Input mengandung simbol berbahaya (XSS). Konten akan dihapus.');
+                document.getElementById('chat-messages').innerHTML = ''; // Clear messages
+                messageInput.value = ''; // Clear input
+                return;
+            }
+
+            prompt = sanitizeInput(prompt);
+
+            // Kirim pesan pengguna
+            const userMessage = document.createElement('div');
+            userMessage.classList.add('message');
+            userMessage.innerHTML = `<div class="text">${prompt}</div>`;
+            chatMessages.appendChild(userMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            messageInput.value = '';
+
+            // Tampilkan spinner loading
+            document.getElementById('loadingSpinner').style.display = 'flex';
+
+            for (let i = 0; i < imageCount; i++) {
+                const apiUrl = `https://api.agatz.xyz/api/photoleap?message=${encodeURIComponent(prompt)}`;
+                try {
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+
+                    if (response.ok && data.status === 200) {
+                        const imageUrl = data.data.url;
+
+                        const imageMessage = document.createElement('div');
+                        imageMessage.classList.add('image-message');
+                        imageMessage.innerHTML = `<img src="${imageUrl}" alt="Generated Image">`;
+                        chatMessages.appendChild(imageMessage);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    } else {
+                        alert('Gagal mendapatkan gambar. Coba lagi.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error.message);
+                    alert('Terjadi kesalahan: ' + error.message);
+                }
+            }
+
+            // Sembunyikan spinner setelah selesai
+            document.getElementById('loadingSpinner').style.display = 'none';
+        });
+
+        document.getElementById('clearContent').addEventListener('click', () => {
+            document.getElementById('chat-messages').innerHTML = '';
+        });
+    </script>
+</body>
+</html>
