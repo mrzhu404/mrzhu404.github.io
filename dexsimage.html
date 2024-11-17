@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -7,15 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lacquer&display=swap" rel="stylesheet">
     <style>
         body {
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #000000;
+            background-color: #E5E4E2;
             margin: 0;
-            font-family: 'PT Sans', sans-serif;
+            font-family: 'Lacquer', sans-serif;
         }
         .chat-container {
             width: 100%;
@@ -23,12 +28,13 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background-color: #000000;
+            background-color: #E5E4E2;
         }
         .chat-header {
             display: flex;
             align-items: center;
             padding: 10px;
+            font-family: 'Lacquer', sans-serif;
             background-color: #222222;
             color: white;
             border-bottom: 1px solid #333333;
@@ -37,7 +43,7 @@
         .header-text {
             flex: 1;
             text-align: center;
-            font-family: 'PT Sans', sans-serif;
+            font-family: 'Lacquer', sans-serif;
             font-size: 1em;
         }
         .icon-button {
@@ -61,7 +67,8 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
-            background-color: #000000;
+            background-color: #E5E4E2;
+            font-family: 'Lacquer', sans-serif;
             overflow-y: auto;
             max-height: calc(100vh - 120px);
         }
@@ -76,7 +83,7 @@
             color: #ffffff;
             border: 1px solid #C0C0C0;
             border-radius: 12px 0 12px 12px;
-            font-family: 'PT Sans', sans-serif;
+            font-family: 'Lacquer', sans-serif;
             white-space: pre-wrap;
             font-size: 0.9em;
             flex: 1;
@@ -100,7 +107,7 @@
             display: flex;
             align-items: center;
             padding: 10px;
-            background-color: #000000;
+            background-color: #D3D3D3;
             position: sticky;
             bottom: 0;
         }
@@ -108,12 +115,12 @@
             flex: 1;
             padding: 10px;
             border: none;
-            border-radius: 20px;
+            border-radius: 10px;
             margin: 0 10px;
-            background-color: #333333;
+            background-color: #222222;
             color: white;
             font-size: 1em;
-            font-family: 'PT Sans', sans-serif;
+            font-family: 'Lacquer', sans-serif;
             outline: none;
         }
         .chat-footer button {
@@ -125,7 +132,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            color: white;
+            color: #222222;
             font-size: 1.2em;
             cursor: pointer;
         }
@@ -134,7 +141,7 @@
         }
         .material-symbols-outlined {
             font-size: 1.6em;
-            color: #C0C0C0;
+            color: #222222;
         }
         .loading-overlay {
             display: none;
@@ -159,6 +166,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            font-family: 'Lacquer', sans-serif;
             background: rgba(0, 0, 0, 0.8);
             justify-content: center;
             align-items: center;
@@ -168,6 +176,7 @@
             color: white;
             padding: 20px;
             border-radius: 8px;
+            font-family: 'Lacquer', sans-serif;
             text-align: center;
             width: 90%;
             max-width: 400px;
@@ -179,6 +188,7 @@
             background-color: #333333;
             color: white;
             font-size: 1em;
+            font-family: 'Lacquer', sans-serif;
             margin-bottom: 20px;
         }
         .modal-content button {
@@ -186,6 +196,7 @@
             background-color: #007BFF;
             color: white;
             border: none;
+            font-family: 'Lacquer', sans-serif;
             border-radius: 5px;
             font-size: 1em;
             cursor: pointer;
@@ -205,7 +216,7 @@
         </div>
         <div class="chat-body" id="chat-messages"></div>
         <div class="chat-footer">
-            <input type="text" id="messageInput" placeholder="Masukkan prompt...">
+            <input type="text" id="messageInput" placeholder="Deskripsikan ide...">
             <button id="sendButton"><span class="material-symbols-outlined">send</span></button>
         </div>
     </div>
@@ -216,14 +227,14 @@
 
     <div class="modal" id="settingsModal">
         <div class="modal-content">
-            <h4>Jumlah Generate Gambar</h4>
+            <h4>Jumlah Gambar</h4>
             <select id="imageCount">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-            </select>
-            <button id="saveSettings">Oke</button>
+                <option value="1">1 Gambar</option>
+                <option value="2">2 Gambar</option>
+                <option value="3">3 Gambar</option>
+                <option value="4">4 Gambar</option>
+            </select><br>
+            <button id="saveSettings">Save</button>
         </div>
     </div>
 
