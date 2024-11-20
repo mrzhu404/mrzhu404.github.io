@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikTok Downloader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lacquer&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #151515;
+            color: #ffffff;
+            font-family: 'Lacquer', sans-serif;
+        }
+        .btn-danger{
+            background-color: #ff0050;
+            border-color: #ff0050;
+            width: 100%;
+        }
+        .btn-danger:hover{
+            background-color: #ff0050;
+            border-color: #ff0050;
+            width: 100%;
+        }
+        .form-control {
+            background-color: #151515;
+            color: #ffffff;
+            border: 1px solid #ff0050;
+            width: 100%;
+        }
+    .form-control:focus {
+            background-color: #151515;
+            color: #ffffff;
+            border: 1px solid #ff0050;
+            width: 100%;
+    }
+        .thumbnail {
+            max-width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+        #alert-box {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+<h1 class="text-center mb-4">
+    <span style="color: cyan;">Tik</span><span style="color: white;">Tok</span>
+    <span style="color: #ff0050;">Downloader</span>
+</h1>
+        <div class="d-flex justify-content-center">
+            <input type="text" id="tiktok-url" class="form-control" placeholder="Masukkan URL TikTok">
+        </div>
+        <div class="text-center mt-3">
+            <button id="process-btn" class="btn btn-danger mt-3" onclick="processVideo()">
+                <span id="button-text">Proses Video</span>
+                <div id="spinner" class="spinner-border spinner-border-sm d-none" role="status"></div>
+            </button>
+        </div>
+        <div id="alert-box" class="alert alert-secondary mt-3" role="alert"></div>
+        <div id="result" class="text-center mt-4 d-none">
+            <img id="thumbnail" class="thumbnail" src="" alt="Thumbnail">
+            <h5 id="video-title"></h5>
+            <button id="preview-btn" class="btn btn-danger mt-3" onclick="previewVideo()">Preview Video</button>
+            <button id="download-btn" class="btn btn-danger mt-3" onclick="downloadVideo()">Download Video</button>
+        </div>
+    </div>
+
+    <script>
+        let videoSource = '';
+        let videoTitle = '';
+
+        function showAlert(message, type = 'secondary') {
+            const alertBox = document.getElementById('alert-box');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type} mt-3`; // Mengganti kelas alert
+            alertBox.style.display = 'block'; // Menampilkan alert
+        }
+
+        function hideAlert() {
+            const alertBox = document.getElementById('alert-box');
+            alertBox.style.display = 'none'; // Menyembunyikan alert
+        }
+
+        function processVideo() {
+            const urlInput = document.getElementById('tiktok-url').value;
+            if (!urlInput) {
+                showAlert("Harap masukkan URL TikTok", "primary");
+                return;
+            }
+
+            const processBtn = document.getElementById('process-btn');
+            const spinner = document.getElementById('spinner');
+            const buttonText = document.getElementById('button-text');
+
+            hideAlert(); // Sembunyikan alert sebelumnya
+            spinner.classList.remove('d-none');
+            buttonText.classList.add('d-none');
+            processBtn.disabled = true;
+
+            fetch(`https://tikwm.com/api/?url=${urlInput}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.data) {
+                        videoTitle = data.data.title;
+                        videoSource = data.data.play;
+                        const videoThumbnail = data.data.cover;
+
+                        document.getElementById('result').classList.remove('d-none');
+                        document.getElementById('video-title').textContent = videoTitle;
+                        document.getElementById('thumbnail').src = videoThumbnail;
+                    } else {
+                        showAlert("Gagal mendapatkan data video.", "secondary");
+                    }
+                })
+                .catch(error => {
+                    showAlert("Terjadi kesalahan: " + error.message, "secondary");
+                })
+                .finally(() => {
+                    spinner.classList.add('d-none');
+                    buttonText.classList.remove('d-none');
+                    processBtn.disabled = false;
+                });
+        }
+
+        function previewVideo() {
+            if (!videoSource) {
+                showAlert("Tidak ada video untuk dipreview!", "secondary");
+                return;
+            }
+            window.open(videoSource, '_blank');
+        }
+
+        async function downloadVideo() {
+            if (!videoSource) {
+                showAlert("Tidak ada video untuk diunduh!", "secondary");
+                return;
+            }
+
+            try {
+                const response = await fetch(videoSource);
+                if (!response.ok) {
+                    throw new Error("Gagal mengunduh video.");
+                }
+
+                const blob = await response.blob();
+                const downloadLink = document.createElement('a');
+                downloadLink.href = URL.createObjectURL(blob);
+                downloadLink.download = `${videoTitle || 'tiktok-video'}.mp4`;
+                downloadLink.click();
+
+                URL.revokeObjectURL(downloadLink.href);
+            } catch (error) {
+                showAlert("Terjadi kesalahan saat mengunduh: " + error.message, "secondary");
+            }
+        }
+    </script>
+</body>
+</html>
